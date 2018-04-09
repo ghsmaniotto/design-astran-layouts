@@ -49,6 +49,7 @@ echo "--> The operation system is $OS. The machine has $CORES logic cores."
 
 # Create auxiliar folders
 mkdir -p in_execution
+mkdir -p not_designed
 mkdir -p final/spices
 mkdir -p final
 mkdir -p final/layouts
@@ -56,6 +57,8 @@ mkdir -p final/spices
 mkdir -p initial
 mkdir -p final/spices
 
+# Creates folders for each CPU core
+# Each core will design defined count of layouts
 for (( CORE=1; CORE<=CORES; CORE++))
 do
 	echo "--> Create folder to core number $CORE"
@@ -63,8 +66,6 @@ do
 	mkdir -p in_execution/$CORE/spices
 	mkdir -p in_execution/$CORE/layouts
 done
-
-exit 1
 
 echo "--> The auxiliar folders were created."
 
@@ -77,6 +78,7 @@ else
 	echo "### Invalid layouts per spice."
 	exit 1
 fi
+
 
 # FILES=/home/astran-master/Astran/build/bin/TCC_Design_Layouts/Reordering/design_spices/pclass-4-fc/original/v2/spices/*.sp #Pasta com arquivos .sp das celulas
 # TECH=/home/astran-master/Astran/build/Work_test/tech_0065_2.rul

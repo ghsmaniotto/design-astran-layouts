@@ -19,7 +19,6 @@ else
 	exit 1
 fi
 
-
 # Get spices
 SPICES=(${SPICES_PATH}/*.sp)
 echo $SPICES
@@ -30,20 +29,9 @@ echo $NUM_SPICES
 if [[ -f ${SPICES[0]} ]]; then
 	echo "--> $NUM_SPICES spices were founded."
 else
-	echo "--> The spices folders does not contain spice files."
+	echo "### The spices folders does not contain spice files."
 	exit 1
 fi
-
-
-# Create auxiliar folders
-mkdir -p in_execution
-mkdir -p final/spices
-mkdir -p final
-mkdir -p final/layouts
-mkdir -p final/spices
-mkdir -p initial
-mkdir -p final/spices
-echo "--> The auxiliar folders were created."
 
 # Define OS type and get number of cores
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
@@ -53,24 +41,45 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     OS="macos"
     CORES=$( sysctl -n hw.ncpu )
 else
-	echo "--> The Operation System can't be defined. The script end."
+	echo "### The Operation System can't be defined. The script end."
 	exit 1
 fi
 
 echo "--> The operation system is $OS. The machine has $CORES logic cores."
 
+# Create auxiliar folders
+mkdir -p in_execution
+mkdir -p final/spices
+mkdir -p final
+mkdir -p final/layouts
+mkdir -p final/spices
+mkdir -p initial
+mkdir -p final/spices
+
+for (( CORE=1; CORE<=CORES; CORE++))
+do
+	echo "--> Create folder to core number $CORE"
+	mkdir -p in_execution/$CORE
+	mkdir -p in_execution/$CORE/spices
+	mkdir -p in_execution/$CORE/layouts
+done
+
+exit 1
+
+echo "--> The auxiliar folders were created."
 
 echo "Do you like to design how many layouts of each spice?"
 read LAYOUTS_PER_SPICE
 
 if [[ $LAYOUTS_PER_SPICE =~ ^[0-9]+$ ]]; then
-	echo $LAYOUTS_PER_SPICE	
+	echo $LAYOUTS_PER_SPICE
+else
+	echo "### Invalid layouts per spice."
+	exit 1
 fi
-
 
 # FILES=/home/astran-master/Astran/build/bin/TCC_Design_Layouts/Reordering/design_spices/pclass-4-fc/original/v2/spices/*.sp #Pasta com arquivos .sp das celulas
 # TECH=/home/astran-master/Astran/build/Work_test/tech_0065_2.rul
-# GUROBI=/opt/gurobi702/linux64/bin/gurobi_cl
 # GND="GND"
 # VDD="VDD"
 
@@ -87,5 +96,5 @@ fi
 # 	cp comandos.run ../../
 # 	#Executa o ASTRAN via scritp
 #        ../../../../../.././Astran --shell comandos.run
-
 # done
+# GUROBI=/opt/gurobi702/linux64/bin/gurobi_cl

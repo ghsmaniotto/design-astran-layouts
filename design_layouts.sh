@@ -1,21 +1,24 @@
 #!/bin/bash
 
-# Get parameters
-
+# Get terminal arguments
 if [ "$1" == "--help" ]; then
 	echo "To run type:"
-	echo "./design_layouts.sh --astran <path_to_astran_project> --spices <path_to_spices>"
+	echo "./design_layouts.sh --astran <path/to/astran/project> --spices <path/to/spices>
+							  --rules <path/to/tech/rules/file> --gurobi_lic <path/to/gurobi/license/file>"
 	exit 1
-elif [ "$1" == "--astran" ] && [ "$3" == "--spices" ]; then
-	if [ -d $2 ] && [ -d $4 ]; then
+elif [ "$1" == "--astran" ] && [ "$3" == "--spices" ] && [ "$5" == "--rules" ] && [ "$7" == "--gurobi_lic" ]; then
+	if [ -d $2 ] && [ -d $4 ] && [ -f $6 ] && [ -f $8 ]; then
 		ASTRAN_PATH=$2
 		SPICES_PATH=$4
+		TECH_RULES=$6
+		GUROBI_LIC=$8
 		echo "--> Correct arguments."
 	else
-		echo "--> --astran and/or --spices values are not directories."
+		echo "### --astran and/or --spices values are not directories."
+		echo "### --rules and/or --gurobi_lic values are not files."
 	fi
 else
-	echo "--> Invalid arguments."
+	echo "### Invalid arguments."
 	exit 1
 fi
 
@@ -57,6 +60,13 @@ mkdir -p final/spices
 mkdir -p initial
 mkdir -p final/spices
 
+# Copy the spices to in_execution folder
+
+# UNNCOMMENT BELOW LINE TO CORRECT EXECUTION
+# cp ${SPICES_PATH}/*.sp initial/
+echo "--> Copy the spice files to in_execution directory."
+
+
 # Creates folders for each CPU core
 # Each core will design defined count of layouts
 for (( CORE=1; CORE<=CORES; CORE++))
@@ -78,25 +88,3 @@ else
 	echo "### Invalid layouts per spice."
 	exit 1
 fi
-
-
-# FILES=/home/astran-master/Astran/build/bin/TCC_Design_Layouts/Reordering/design_spices/pclass-4-fc/original/v2/spices/*.sp #Pasta com arquivos .sp das celulas
-# TECH=/home/astran-master/Astran/build/Work_test/tech_0065_2.rul
-# GND="GND"
-# VDD="VDD"
-
-# for arquivo in $FILES
-# do
-# 	#Retira o nome da celula
-# 	nomeArquivoSpice="${arquivo##*/}"
-# 	echo $nomeArquivoSpice
-# 	nomeCelula="${nomeArquivoSpice%%.*}"
-# 	nomeCelula="${nomeCelula^^}"
-# 	echo $nomeCelula
-# 	#Cria um arquivo com os comandos para executar o ASTRAN
-#        	echo -e "set lpsolve \"$GUROBI\"\nset vddnet $VDD\nset gndnet $GND\nload technology \"$TECH\"\nload netlist \"$arquivo\"\ncellgen select \"$nomeCelula\"\ncellgen autoflow\nexport layout \"$nomeCelula\" \"""layouts/""$nomeCelula"".cif\"\nexit" > comandos.run
-# 	cp comandos.run ../../
-# 	#Executa o ASTRAN via scritp
-#        ../../../../../.././Astran --shell comandos.run
-# done
-# GUROBI=/opt/gurobi702/linux64/bin/gurobi_cl

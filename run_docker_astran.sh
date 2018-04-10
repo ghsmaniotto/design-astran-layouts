@@ -54,12 +54,25 @@ while [[ DESIGNING -eq 1 ]]; do
 			# Move the spice to not designed folder
 		fi
 	else
+		# Get spice from initial folder
 		INITIAL_SPICES=(initial/*.sp)
+		# If there are no spices in initial folder, exit script
 		if [[ ${#INITIAL_SPICES[@]} -lt 0 ]]; then
 			echo "### The initial folder is empty. Finish the execution."
 			exit 1
 		fi
+		
+		# Try to move the spice to execution directory
 		mv $INITIAL_SPICES in_execution/$CORE/spices/
+		
+		# Check it move command was correctly executed
+		while [[ $? -ne 0 ]]; do
+			INITIAL_SPICES=(initial/*.sp)
+			mv $INITIAL_SPICES in_execution/$CORE/spices/
+		done
+
+		
+		
 		echo "--> Copy spice from initial folder to in_execution."
 	fi
 done

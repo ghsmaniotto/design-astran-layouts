@@ -4,7 +4,8 @@
 if [ "$1" == "--help" ]; then
 	echo "To run type:"
 	echo "./design_layouts.sh --astran <path/to/astran/project> --spices <path/to/spices>
-							  --rules <path/to/tech/rules/file> --gurobi_lic <path/to/gurobi/license/file>"
+							  --rules <path/to/tech/rules/file> --gurobi_lic <path/to/gurobi/license/file>
+							  --cores <num>,<num>,<num>"
 	exit 1
 elif [ "$1" == "--astran" ] && [ "$3" == "--spices" ] && [ "$5" == "--rules" ] && [ "$7" == "--gurobi_lic" ]; then
 	if [ -d $2 ] && [ -d $4 ] && [ -f $6 ] && [ -f $8 ]; then
@@ -12,6 +13,14 @@ elif [ "$1" == "--astran" ] && [ "$3" == "--spices" ] && [ "$5" == "--rules" ] &
 		SPICES_PATH=$4
 		TECH_RULES=$6
 		GUROBI_LIC=$8
+		# Split by comma the CPU cores argument
+		IFS=',' read -r -a CORES <<< ${10}
+
+		echo "-----> Astran path: $ASTRAN_PATH"
+		echo "-----> Spices folder: $SPICES_PATH"
+		echo "-----> Tech rules: $TECH_RULES"
+		echo "-----> Gurobi license: $GUROBI_LIC"
+		echo "-----> Cores to run: ${10}"
 		echo "--> Correct arguments."
 	else
 		echo "### --astran and/or --spices values are not directories."
@@ -37,18 +46,20 @@ else
 fi
 
 # Define OS type and get number of cores
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
-    OS="linux"
-    CORES=$( nproc )
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-    OS="macos"
-    CORES=$( sysctl -n hw.ncpu )
-else
-	echo "### The Operation System can't be defined. The script end."
-	exit 1
-fi
+# if [[ "$OSTYPE" == "linux-gnu" ]]; then
+#     OS="linux"
+#     CORES=$( nproc )
+# elif [[ "$OSTYPE" == "darwin"* ]]; then
+#     OS="macos"
+#     CORES=$( sysctl -n hw.ncpu )
+# else
+# 	echo "### The Operation System can't be defined. The script end."
+# 	exit 1
+# fi
 
-echo "--> The operation system is $OS. The machine has $CORES logic cores."
+# echo "--> The operation system is $OS. The machine has $CORES logic cores."
+
+rm -fR in_execution
 
 # Create auxiliar folders
 mkdir -p in_execution
@@ -66,20 +77,23 @@ mkdir -p final/spices
 # cp ${SPICES_PATH}/*.sp initial/
 echo "--> Copy the spice files to in_execution directory."
 
+# Creates directories for each core
+for (( CORE = 0; CORE < ${#CORES[@]}; CORE++ )); do
+	echo "--> Create folder to core number ${CORES[$CORE]}"
+	mkdir -p in_execution/${CORES[$CORE]}
+	mkdir -p in_execution/${CORES[$CORE]}/spices
+	mkdir -p in_execution/${CORES[$CORE]}/layouts
+done
 
 # Creates folders for each CPU core
 # Each core will design defined count of layouts
 for (( CORE=1; CORE<=CORES; CORE++))
 do
-	echo "--> Create folder to core number $CORE"
-	mkdir -p in_execution/$CORE
-	mkdir -p in_execution/$CORE/spices
-	mkdir -p in_execution/$CORE/layouts
+	echo $CORES[$CORE]
 done
 
 echo "--> The auxiliar folders were created."
-
-echo "Do you like to design how many layouts of each spice?"
+echo "Do you like to design how many layouts of each spice? Must be decimal."
 read LAYOUTS_PER_SPICE
 
 if [[ $LAYOUTS_PER_SPICE =~ ^[0-9]+$ ]]; then
@@ -89,4 +103,15 @@ else
 	exit 1
 fi
 
+exit 1
 # Creates docker container running run_docker_astran.sh script
+for (( CORE = 0; CORE < ${#CORES[@]}; CORE++ )); do
+	docker run --cpuset-cpus="${CORES[$CORE]}" \
+	   --name astran_docker_${CORES[$CORE]} \
+	   -it -d \
+	   -e GRB_LICENSE_FILE=/opt/gurobi.lic \
+	   -v $GUROBI_LIC:/opt/gurobi.lic \
+	   -v $ASTRAN_PATH:/home/astran \
+	   --net=host ghsmaniotto/astran:1.0.0 \
+	   sh -c "chmod 777 gerarCelulas.sh && ./gerarCelulas.sh"
+done

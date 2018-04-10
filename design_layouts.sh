@@ -88,3 +88,5 @@ else
 	echo "### Invalid layouts per spice."
 	exit 1
 fi
+
+# Creates docker container running run_docker_astran.sh script

@@ -74,7 +74,7 @@ mkdir -p final/spices
 # Copy the spices to in_execution folder
 
 # UNNCOMMENT BELOW LINE TO CORRECT EXECUTION
-# cp ${SPICES_PATH}/*.sp initial/
+cp ${SPICES_PATH}/*.sp initial/
 echo "--> Copy the spice files to in_execution directory."
 
 # Creates directories for each core
@@ -87,10 +87,10 @@ done
 
 # Creates folders for each CPU core
 # Each core will design defined count of layouts
-for (( CORE=1; CORE<=CORES; CORE++))
-do
-	echo $CORES[$CORE]
-done
+# for (( CORE=1; CORE<=CORES; CORE++))
+# do
+# 	echo $CORES[$CORE]
+# done
 
 echo "--> The auxiliar folders were created."
 echo "Do you like to design how many layouts of each spice? Must be decimal."
@@ -103,7 +103,6 @@ else
 	exit 1
 fi
 
-exit 1
 # Creates docker container running run_docker_astran.sh script
 for (( CORE = 0; CORE < ${#CORES[@]}; CORE++ )); do
 	docker run --cpuset-cpus="${CORES[$CORE]}" \
@@ -112,6 +111,9 @@ for (( CORE = 0; CORE < ${#CORES[@]}; CORE++ )); do
 	   -e GRB_LICENSE_FILE=/opt/gurobi.lic \
 	   -v $GUROBI_LIC:/opt/gurobi.lic \
 	   -v $ASTRAN_PATH:/home/astran \
+	   -v $TECH_RULES:/home/techrule.rul \
+	   -v $PWD:/home/simulation \
 	   --net=host ghsmaniotto/astran:1.0.0 \
-	   sh -c "chmod 777 gerarCelulas.sh && ./gerarCelulas.sh"
+	   sh -c "chmod 777 run_docker_astran.sh && ./run_docker_astran.sh --astran /home/astran/Astran/build/bin --rules /home/techrule.rul --gurobi_lic /opt/gurobi.lic --core ${CORES[$CORE]}" 
+
 done

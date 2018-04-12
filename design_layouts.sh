@@ -85,13 +85,6 @@ for (( CORE = 0; CORE < ${#CORES[@]}; CORE++ )); do
 	mkdir -p in_execution/${CORES[$CORE]}/layouts
 done
 
-# Creates folders for each CPU core
-# Each core will design defined count of layouts
-# for (( CORE=1; CORE<=CORES; CORE++))
-# do
-# 	echo $CORES[$CORE]
-# done
-
 echo "--> The auxiliar folders were created."
 echo "Do you like to design how many layouts of each spice? Must be decimal."
 read LAYOUTS_PER_SPICE
@@ -114,6 +107,7 @@ for (( CORE = 0; CORE < ${#CORES[@]}; CORE++ )); do
 	   -v $TECH_RULES:/home/techrule.rul \
 	   -v $PWD:/home/simulation \
 	   --net=host ghsmaniotto/astran:1.0.0 \
-	   sh -c "chmod 777 run_docker_astran.sh && ./run_docker_astran.sh --astran /home/astran/Astran/build/bin --rules /home/techrule.rul --gurobi_lic /opt/gurobi.lic --core ${CORES[$CORE]}" 
+	   sh -c "cd /home/simulation && chmod 777 run_docker_astran.sh && ./run_docker_astran.sh --astran /home/astran/Astran/build/bin --rules /home/techrule.rul --gurobi_lic /opt/gurobi.lic --core ${CORES[$CORE]}" 
 
 done
+

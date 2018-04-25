@@ -59,42 +59,44 @@ fi
 
 # echo "--> The operation system is $OS. The machine has $CORES logic cores."
 
-rm -fR in_execution
+# Get execution path
+STR=$0
 
-# Create auxiliar folders
-mkdir -p in_execution
-mkdir -p not_designed
-mkdir -p final/spices
-mkdir -p final
-mkdir -p final/layouts
-mkdir -p final/spices
-mkdir -p initial
-mkdir -p final/spices
+# Remove folder that was in execution
+rm -fR ${STR/\/.\/*/''}/in_execution
+
+# Create auxiliar folders in execution folder
+mkdir -p ${STR/\/.\/*/''}/in_execution
+mkdir -p ${STR/\/.\/*/''}/not_designed
+mkdir -p ${STR/\/.\/*/''}/final/spices
+mkdir -p ${STR/\/.\/*/''}/final
+mkdir -p ${STR/\/.\/*/''}/final/layouts
+mkdir -p ${STR/\/.\/*/''}/final/spices
+mkdir -p ${STR/\/.\/*/''}/initial
+mkdir -p ${STR/\/.\/*/''}/final/spices
 
 # Copy the spices to in_execution folder
-
-# UNNCOMMENT BELOW LINE TO CORRECT EXECUTION
-cp ${SPICES_PATH}/*.sp initial/
+cp ${SPICES_PATH}/*.sp ${STR/\/.\/*/''}/initial
 echo "--> Copy the spice files to in_execution directory."
-
+echo "${SPICES_PATH}/*.sp to ${STR/\/.\/*/''}/initial"
 # Creates directories for each core
 for (( CORE = 0; CORE < ${#CORES[@]}; CORE++ )); do
 	echo "--> Create folder to core number ${CORES[$CORE]}"
-	mkdir -p in_execution/${CORES[$CORE]}
-	mkdir -p in_execution/${CORES[$CORE]}/spices
-	mkdir -p in_execution/${CORES[$CORE]}/layouts
+	mkdir -p ${STR/\/.\/*/''}/in_execution/${CORES[$CORE]}
+	mkdir -p ${STR/\/.\/*/''}/in_execution/${CORES[$CORE]}/spices
+	mkdir -p ${STR/\/.\/*/''}/in_execution/${CORES[$CORE]}/layouts
 done
 
 echo "--> The auxiliar folders were created."
-echo "Do you like to design how many layouts of each spice? Must be decimal."
-read LAYOUTS_PER_SPICE
+# echo "Do you like to design how many layouts of each spice? Must be decimal."
+# read LAYOUTS_PER_SPICE
 
-if [[ $LAYOUTS_PER_SPICE =~ ^[0-9]+$ ]]; then
-	echo $LAYOUTS_PER_SPICE
-else
-	echo "### Invalid layouts per spice."
-	exit 1
-fi
+# if [[ $LAYOUTS_PER_SPICE =~ ^[0-9]+$ ]]; then
+# 	echo $LAYOUTS_PER_SPICE
+# else
+# 	echo "### Invalid layouts per spice."
+# 	exit 1
+# fi
 
 # Creates docker container running run_docker_astran.sh script
 for (( CORE = 0; CORE < ${#CORES[@]}; CORE++ )); do
@@ -105,7 +107,7 @@ for (( CORE = 0; CORE < ${#CORES[@]}; CORE++ )); do
 	   -v $GUROBI_LIC:/opt/gurobi.lic \
 	   -v $ASTRAN_PATH:/home/astran \
 	   -v $TECH_RULES:/home/techrule.rul \
-	   -v $PWD:/home/simulation \
+	   -v ${STR/\/.\/*/''}:/home/simulation \
 	   --net=host ghsmaniotto/astran:1.0.0 \
 	   sh -c "cd /home/simulation && chmod 777 run_docker_astran.sh && ./run_docker_astran.sh --astran /home/astran/Astran/build/bin --rules /home/techrule.rul --gurobi_lic /opt/gurobi.lic --core ${CORES[$CORE]}" 
 

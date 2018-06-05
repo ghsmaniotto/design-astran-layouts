@@ -12,13 +12,13 @@ if [ "$1" == "--astran" ] && [ "$3" == "--rules" ] && [ "$5" == "--gurobi_lic" ]
 		echo "-----> Gurobi license: $GUROBI_LIC"
 		echo "-----> CPU core to run: $CORE"
 		echo "--> Correct arguments."
-
 	else
+		echo "### ERROR:"
 		echo "--> --astran and/or --spices values are not directories."
 		exit 1
-
 	fi
 else
+	echo "### ERROR:"
 	echo "--> Invalid arguments."
 	echo "Try to run with the following command and arguments:"
 	echo "./run_docker_astran.sh --astran <astran/path> --rules <path/to/tech/file> --gurobi_lic <path/to/gurobi/license> --core <CPU_core>" 
@@ -79,7 +79,6 @@ while [[ DESIGNING -eq 1 ]]; do
 		# If there are no spices in initial folder, exit script
 		if [[ ${#INITIAL_SPICES[@]} -lt 0 ]]; then
 			echo "### The initial folder is empty. Finish the execution."
-			# 
 			DESIGNING=0
 			exit 1
 		fi
